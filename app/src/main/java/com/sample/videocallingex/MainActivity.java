@@ -11,6 +11,7 @@ import static com.intel.webrtc.base.MediaConstraints.VideoTrackConstraints.Camer
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
@@ -18,12 +19,20 @@ import android.media.AudioManager;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -80,8 +89,9 @@ import io.socket.client.Manager;
 public class MainActivity extends AppCompatActivity
         implements VideoFragment.VideoFragmentListener,
         ActivityCompat.OnRequestPermissionsResultCallback,
-        ConferenceClient.ConferenceClientObserver {
+        ConferenceClient.ConferenceClientObserver, NavigationView.OnNavigationItemSelectedListener{
     MenuItem action_icon;
+    private final int interval = 1000; // 1 Second
     static final int STATS_INTERVAL_MS = 5000;
     private static final String TAG = "ICS_CONF";
     private static final int ICS_REQUEST_CODE = 100;
@@ -109,7 +119,10 @@ public class MainActivity extends AppCompatActivity
     private Publication screenPublication;
     private SurfaceViewRenderer localRenderer, remoteRenderer;
     private boolean isChecked = false;
+
     ActionBar actionBar;
+    //Toolbar toolbar;
+    DrawerLayout drawer;
     private View.OnClickListener screenControl = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -338,17 +351,44 @@ public class MainActivity extends AppCompatActivity
         middleBtn = findViewById(R.id.multi_func_btn_middle);
         middleBtn.setOnClickListener(shareScreen);
         middleBtn.setVisibility(View.GONE);
-         actionBar = getSupportActionBar();
+      //  toolbar = (Toolbar) findViewById(R.id.toolbar);
+       // setSupportActionBar(toolbar);
+
+      //   actionBar = getSupportActionBar();
+//        if (actionBar != null) {
+//            actionBar.setDisplayHomeAsUpEnabled(true);
+//        }
+
         AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+
 
         loginFragment = new LoginFragment();
         switchFragment(loginFragment);
 
         initConferenceClient();
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, R.drawable.settings, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+
     }
 
-
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.END)) {
+            drawer.closeDrawer(GravityCompat.END);
+        } else {
+            super.onBackPressed();
+        }
+    }
     @Override
     protected void onPause() {
         if (localStream != null) {
@@ -431,7 +471,7 @@ public class MainActivity extends AppCompatActivity
     private void onConnectSucceed() {
         runOnUiThread(() -> {
             if (videoFragment == null) {
-                action_icon.setVisible(true);
+               // action_icon.setVisible(true);
                 videoFragment = new VideoFragment();
 
             }
@@ -459,56 +499,80 @@ public class MainActivity extends AppCompatActivity
                 getStats();
             }
         }, 0, STATS_INTERVAL_MS);
+//try{
+//    subscribeMixedStream();
+//}catch (Exception e){
+//
+//}
 
-            subscribeMixedStream();
 
+        Timer t = new Timer();
+//Set the schedule function and rate
+        t.scheduleAtFixedRate(new TimerTask() {
+
+                                  @Override
+                                  public void run() {
+                                      subscribeMixedStream();
+                                      //Called each time when 1000 milliseconds (1 second) (the period parameter)
+                                  }
+
+                              },
+//Set how long before to start calling the TimerTask (in milliseconds)
+                0,
+//Set the amount of time between each execution (in milliseconds)
+                1000);
 
     }
 
     private void subscribeMixedStream() {
-        executor.execute(() -> {
-            for (RemoteStream remoteStream : conferenceClient.info().getRemoteStreams()) {
-                if (remoteStream instanceof RemoteMixedStream
-                        && ((RemoteMixedStream) remoteStream).view.equals("common")) {
-                    stream2Sub = remoteStream;
-                    break;
+        try {
+            executor.execute(() -> {
+                for (RemoteStream remoteStream : conferenceClient.info().getRemoteStreams()) {
+                    if (remoteStream instanceof RemoteMixedStream
+                            && ((RemoteMixedStream) remoteStream).view.equals("common")) {
+                        stream2Sub = remoteStream;
+                        break;
+                    }
                 }
-            }
-            final RemoteStream finalStream2bSub = stream2Sub;
-            VideoSubscriptionConstraints videoOption =
-                    VideoSubscriptionConstraints.builder()
-                            .setResolution(640, 480)
-                            .setFrameRate(24)
-                            .addCodec(new VideoCodecParameters(H264))
-                            .addCodec(new VideoCodecParameters(VP8))
-                            .build();
+                final RemoteStream finalStream2bSub = stream2Sub;
+                VideoSubscriptionConstraints videoOption =
+                        VideoSubscriptionConstraints.builder()
+                                .setResolution(640, 480)
+                                .setFrameRate(24)
+                                .addCodec(new VideoCodecParameters(H264))
+                                .addCodec(new VideoCodecParameters(VP8))
+                                .build();
 
-            AudioSubscriptionConstraints audioOption =
-                    AudioSubscriptionConstraints.builder()
-                            .addCodec(new AudioCodecParameters(OPUS))
-                            .addCodec(new AudioCodecParameters(PCMU))
-                            .build();
+                AudioSubscriptionConstraints audioOption =
+                        AudioSubscriptionConstraints.builder()
+                                .addCodec(new AudioCodecParameters(OPUS))
+                                .addCodec(new AudioCodecParameters(PCMU))
+                                .build();
 
-            SubscribeOptions options = SubscribeOptions.builder(true, true)
-                    .setAudioOption(audioOption)
-                    .setVideoOption(videoOption)
-                    .build();
+                SubscribeOptions options = SubscribeOptions.builder(true, true)
+                        .setAudioOption(audioOption)
+                        .setVideoOption(videoOption)
+                        .build();
 
-            conferenceClient.subscribe(stream2Sub, options,
-                    new ActionCallback<Subscription>() {
-                        @Override
-                        public void onSuccess(Subscription result) {
-                            MainActivity.this.subscription = result;
-                            finalStream2bSub.attach(remoteRenderer);
-                        }
+                conferenceClient.subscribe(stream2Sub, options,
+                        new ActionCallback<Subscription>() {
+                            @Override
+                            public void onSuccess(Subscription result) {
+                                MainActivity.this.subscription = result;
+                                finalStream2bSub.attach(remoteRenderer);
+                            }
 
-                        @Override
-                        public void onFailure(IcsError error) {
-                            Log.e(TAG, "Failed to subscribe "
-                                    + error.errorMessage);
-                        }
-                    });
-        });
+                            @Override
+                            public void onFailure(IcsError error) {
+                                Log.e(TAG, "Failed to subscribe "
+                                        + error.errorMessage);
+                            }
+                        });
+            });
+        }catch (Exception e){
+
+        }
+
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -535,8 +599,8 @@ public class MainActivity extends AppCompatActivity
                             middleBtn.setTextColor(Color.WHITE);
                             middleBtn.setText(R.string.share_screen);
                         });
-                       // screenCapturer.stopCapture();
-                       // screenCapturer.dispose();
+                        screenCapturer.stopCapture();
+                        screenCapturer.dispose();
                         screenCapturer = null;
                         screenStream.dispose();
                         screenStream = null;
@@ -617,6 +681,7 @@ public class MainActivity extends AppCompatActivity
             rightBtn.setTextColor(Color.WHITE);
             rightBtn.setText(R.string.settings);
             rightBtn.setOnClickListener(settings);
+
             fragmentContainer.setOnClickListener(null);
         });
 
@@ -644,9 +709,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-                getMenuInflater().inflate(R.menu.menu, menu);
+                getMenuInflater().inflate(R.menu.activity_menu_drawer, menu);
        // Menu menu =navigationView.getMenu();
-         action_icon = menu.findItem(R.id.switchId);
+        // action_icon = menu.findItem(R.id.switchId);
         return true;
     }
 
@@ -654,15 +719,20 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.switchId) {
+        if (id == R.id.menu_close) {
             Toast.makeText(getApplicationContext(), "menu select", Toast.LENGTH_SHORT).show();
             return true;
         }
 
-        if (id == R.id.action_settings) {
+        if (id == R.id.menu_option) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+        return false;
     }
 }

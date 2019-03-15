@@ -17,4 +17,6 @@
     <string name="sharescreen">ShareScreen</string>
     <string name="share_screen">ShareScreen</string>
     <string name="stop_screen">StopSharing</string>
+    <string name="navigation_drawer_close">Close</string>
+    <string name="navigation_drawer_open">Open</string>
 </resources>

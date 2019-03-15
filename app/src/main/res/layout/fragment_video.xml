@@ -14,6 +14,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="right|center_vertical"
             android:elevation="1dp"
+            android:visibility="gone"
             android:orientation="vertical">
 
             <TextView
@@ -41,8 +42,9 @@
 
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/small_renderer"
+            android:visibility="gone"
             android:layout_width="160dp"
-            android:layout_height="120dp"/>
+            android:layout_height="140dp"/>
 
         <org.webrtc.SurfaceViewRenderer
             android:id="@+id/full_renderer"

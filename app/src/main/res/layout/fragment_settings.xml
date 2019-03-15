@@ -6,6 +6,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/bg"
         android:orientation="vertical">
 
 
@@ -23,7 +24,7 @@
                 android:layout_weight="1"
                 android:gravity="right"
                 android:text="@string/room_id"
-                android:textColor="@color/colorPrimary"
+                android:textColor="#fff"
                 android:textSize="20sp"
                 android:textStyle="bold"/>
 
@@ -54,7 +55,7 @@
                 android:layout_weight="1"
                 android:gravity="right"
                 android:text="@string/camera_facing"
-                android:textColor="@color/colorPrimary"
+                android:textColor="#fff"
                 android:textSize="20sp"
                 android:textStyle="bold"/>
 
@@ -99,7 +100,7 @@
                 android:layout_weight="1"
                 android:gravity="right"
                 android:text="@string/camera_resolution"
-                android:textColor="@color/colorPrimary"
+                android:textColor="#fff"
                 android:textSize="20sp"
                 android:textStyle="bold"/>
 

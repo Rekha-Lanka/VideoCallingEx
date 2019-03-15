@@ -57,6 +57,7 @@ public class SettingsFragment extends Fragment implements RadioGroup.OnCheckedCh
         vgaReso.setChecked(true);
 
         roomIdEditText = mView.findViewById(R.id.room_id);
+        roomIdEditText.setText("5c10a7a3d7a49659e1ac470b");
 
         return mView;
     }
