@@ -11,28 +11,90 @@
         android:layout_height="match_parent"
         android:background="@android:color/background_light">
 
-        <RelativeLayout
+        <LinearLayout
             android:id="@+id/fragment_container"
             android:layout_width="match_parent"
+            android:orientation="vertical"
             android:layout_height="match_parent">
-            <RelativeLayout
-                android:id="@+id/rl"
+            <!--<RelativeLayout-->
+                <!--android:id="@+id/rl"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--tools:context=".MainActivity"-->
+                <!--android:background="@android:color/white">-->
+            <!--<ImageView-->
+                <!--android:id="@+id/settings"-->
+                <!--android:layout_gravity="right|end"-->
+                <!--android:layout_marginTop="40dp"-->
+                <!--android:layout_marginRight="40dp"-->
+                <!--android:src="@drawable/settings"-->
+                <!--android:layout_alignParentEnd="true"-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"/>-->
+            <!--</RelativeLayout>-->
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.0"
+            android:weightSum="1.0"
+            android:layout_marginRight="30dp"
+            android:orientation="vertical"
+            android:layout_gravity="bottom|end"
+            android:paddingRight="10dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical">
+            <ImageView
+                android:id="@+id/fab3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:context=".MainActivity"
-                android:background="@android:color/white">
+                android:src="@drawable/videocameraoff"
+                android:layout_above="@+id/fabright"
+                android:visibility="gone" />
             <ImageView
-                android:id="@+id/settings"
-                android:layout_gravity="right|end"
-                android:layout_marginTop="40dp"
-                android:layout_marginRight="40dp"
-                android:src="@drawable/settings"
-                android:layout_alignParentEnd="true"
+                android:id="@+id/fab2"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-            </RelativeLayout>
-        </RelativeLayout>
-
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:src="@drawable/cameravideo"
+                android:layout_above="@+id/fabright"
+                android:visibility="gone" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="right"
+            android:orientation="vertical">
+            <ImageView
+                android:id="@+id/fab1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/volumeoff"
+                android:layout_above="@+id/fabright"
+                android:visibility="gone" />
+            <ImageView
+                android:id="@+id/fab0"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/volumeon"
+                android:layout_above="@+id/fabright"
+                android:visibility="gone" />
+        </LinearLayout>
+        <ImageView
+            android:id="@+id/fabright"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|right"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="60dp"
+            android:visibility="gone"
+            android:src="@drawable/add" />
+        </LinearLayout>
         <LinearLayout
             android:id="@+id/bottom_bar"
             android:layout_width="match_parent"

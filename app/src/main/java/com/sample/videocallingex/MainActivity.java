@@ -17,6 +17,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.projection.MediaProjectionManager;
+import android.opengl.Visibility;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -39,8 +40,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
@@ -89,8 +94,12 @@ import io.socket.client.Manager;
 public class MainActivity extends AppCompatActivity
         implements VideoFragment.VideoFragmentListener,
         ActivityCompat.OnRequestPermissionsResultCallback,
-        ConferenceClient.ConferenceClientObserver, NavigationView.OnNavigationItemSelectedListener{
+        ConferenceClient.ConferenceClientObserver, NavigationView.OnNavigationItemSelectedListener,
+        View.OnClickListener {
+    private Boolean isFabOpen = false;
     MenuItem action_icon;
+    ImageView fabright,fab0,fab1,fab2,fab3;
+    private Animation fab_open,fab_close,rotate_forward,rotate_backward;
     private final int interval = 1000; // 1 Second
     static final int STATS_INTERVAL_MS = 5000;
     private static final String TAG = "ICS_CONF";
@@ -98,10 +107,10 @@ public class MainActivity extends AppCompatActivity
     private static boolean contextHasInitialized = false;
     EglBase rootEglBase;
     private boolean fullScreen = false;
-    private boolean settingsCurrent = false;
+   // private boolean settingsCurrent = false;
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     private Timer statsTimer;
-    private LoginFragment loginFragment;
+   // private LoginFragment loginFragment;
     private VideoFragment videoFragment;
     private SettingsFragment settingsFragment;
     private View fragmentContainer;
@@ -118,7 +127,9 @@ public class MainActivity extends AppCompatActivity
     private IcsScreenCapturer screenCapturer;
     private Publication screenPublication;
     private SurfaceViewRenderer localRenderer, remoteRenderer;
-    private boolean isChecked = false;
+    private boolean isChecked = true;
+
+
 
     ActionBar actionBar;
     //Toolbar toolbar;
@@ -144,23 +155,25 @@ public class MainActivity extends AppCompatActivity
         }
     };
 
-    private View.OnClickListener settings = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (settingsCurrent) {
-                switchFragment(loginFragment);
-                rightBtn.setText(R.string.settings);
-            } else {
-                if (settingsFragment == null) {
-                    settingsFragment = new SettingsFragment();
-                }
-                switchFragment(settingsFragment);
-
-                rightBtn.setText(R.string.back);
-            }
-            settingsCurrent = !settingsCurrent;
-        }
-    };
+//    private View.OnClickListener settings = new View.OnClickListener() {
+//        @Override
+//        public void onClick(View v) {
+////            if (settingsCurrent) {
+////                switchFragment(loginFragment);
+////                rightBtn.setText(R.string.settings);
+////            }
+// //           else {
+//                if (settingsFragment == null) {
+//                    settingsFragment = new SettingsFragment();
+//                }
+//                switchFragment(settingsFragment);
+//
+//               // rightBtn.setText(R.string.back);
+//            rightBtn.setVisibility(View.GONE);
+// //           }
+// //           settingsCurrent = !settingsCurrent;
+//        }
+//    };
     private View.OnClickListener leaveRoom = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -236,7 +249,7 @@ public class MainActivity extends AppCompatActivity
                             body.put("value", "common");
                             mixBody.put(body);
 
-                            String serverUrl = loginFragment.getServerUrl();
+                            String serverUrl = settingsFragment.getServerUrl();
                             String uri = serverUrl
                                     + "/rooms/" + conferenceInfo.id()
                                     + "/streams/" + result.id();
@@ -274,7 +287,7 @@ public class MainActivity extends AppCompatActivity
             rightBtn.setTextColor(Color.DKGRAY);
 
             executor.execute(() -> {
-                String serverUrl = loginFragment.getServerUrl();
+                String serverUrl = settingsFragment.getServerUrl();
                 String roomId = settingsFragment == null ? "" : settingsFragment.getRoomId();
 
                 JSONObject joinBody = new JSONObject();
@@ -347,7 +360,8 @@ public class MainActivity extends AppCompatActivity
         leftBtn = findViewById(R.id.multi_func_btn_left);
         leftBtn.setOnClickListener(joinRoom);
         rightBtn = findViewById(R.id.multi_func_btn_right);
-        rightBtn.setOnClickListener(settings);
+        rightBtn.setOnClickListener(publish);
+        rightBtn.setVisibility(View.GONE);
         middleBtn = findViewById(R.id.multi_func_btn_middle);
         middleBtn.setOnClickListener(shareScreen);
         middleBtn.setVisibility(View.GONE);
@@ -363,9 +377,10 @@ public class MainActivity extends AppCompatActivity
         audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
 
 
-        loginFragment = new LoginFragment();
-        switchFragment(loginFragment);
-
+//        loginFragment = new LoginFragment();
+//        switchFragment(loginFragment);
+          settingsFragment=new SettingsFragment();
+          switchFragment(settingsFragment);
         initConferenceClient();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -376,6 +391,24 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        fabright=(ImageView)findViewById(R.id.fabright);
+        fab0 = (ImageView) findViewById(R.id.fab0);
+        fab1 = (ImageView) findViewById(R.id.fab1);
+        fab2 = (ImageView) findViewById(R.id.fab2);
+        fab3 = (ImageView) findViewById(R.id.fab3);
+
+        fab_open = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.fab_open);
+        fab_close = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.fab_close);
+        rotate_forward = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.rotate_forward);
+        rotate_backward = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.rotate_backward);
+
+
+
+        fabright.setOnClickListener(this);
+        fab0.setOnClickListener(this);
+        fab1.setOnClickListener(this);
+        fab2.setOnClickListener(this);
+        fab3.setOnClickListener(this);
 
 
     }
@@ -383,8 +416,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.END)) {
-            drawer.closeDrawer(GravityCompat.END);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
         }
@@ -471,7 +504,8 @@ public class MainActivity extends AppCompatActivity
     private void onConnectSucceed() {
         runOnUiThread(() -> {
             if (videoFragment == null) {
-               // action_icon.setVisible(true);
+                //action_icon.setVisible(true);
+                fabright.setVisibility(View.VISIBLE);
                 videoFragment = new VideoFragment();
 
             }
@@ -643,8 +677,10 @@ public class MainActivity extends AppCompatActivity
                 .commitAllowingStateLoss();
         if (fragment instanceof VideoFragment) {
             middleBtn.setVisibility(View.VISIBLE);
+            rightBtn.setVisibility(View.VISIBLE);
         } else {
             middleBtn.setVisibility(View.GONE);
+            rightBtn.setVisibility(View.GONE);
         }
     }
 
@@ -672,7 +708,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onServerDisconnected() {
         runOnUiThread(() -> {
-            switchFragment(loginFragment);
+            switchFragment(settingsFragment);
+            fabright.setVisibility(View.INVISIBLE);
             leftBtn.setEnabled(true);
             leftBtn.setTextColor(Color.WHITE);
             leftBtn.setText(R.string.connect);
@@ -680,7 +717,8 @@ public class MainActivity extends AppCompatActivity
             rightBtn.setEnabled(true);
             rightBtn.setTextColor(Color.WHITE);
             rightBtn.setText(R.string.settings);
-            rightBtn.setOnClickListener(settings);
+            rightBtn.setVisibility(View.GONE);
+            //rightBtn.setOnClickListener(settings);
 
             fragmentContainer.setOnClickListener(null);
         });
@@ -735,4 +773,95 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         return false;
     }
+
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        switch (id){
+            case R.id.fabright:
+                animateFAB();
+
+                    fab0.setVisibility(View.VISIBLE);
+                    fab2.setVisibility(View.VISIBLE);
+                    fab1.setVisibility(View.GONE);
+                    fab3.setVisibility(View.GONE);
+               //     isChecked=false;
+
+                break;
+            case R.id.fab0:
+                Toast.makeText(this, "fab0", Toast.LENGTH_SHORT).show();
+               if(fab0.getVisibility()==View.VISIBLE){
+                   fab0.setVisibility(View.GONE);
+                   fab1.setVisibility(View.VISIBLE);
+               }
+                break;
+            case R.id.fab1:
+                Toast.makeText(this, "fab1", Toast.LENGTH_SHORT).show();
+                if(fab1.getVisibility()==View.VISIBLE){
+                    fab1.setVisibility(View.GONE);
+                    fab0.setVisibility(View.VISIBLE);
+
+                }
+                break;
+            case R.id.fab2:
+                Toast.makeText(this, "fab2", Toast.LENGTH_SHORT).show();
+                if(fab2.getVisibility()==View.VISIBLE){
+                    fab2.setVisibility(View.GONE);
+                    fab3.setVisibility(View.VISIBLE);
+                }
+                break;
+            case R.id.fab3:
+                Toast.makeText(this, "fab3", Toast.LENGTH_SHORT).show();
+                if(fab3.getVisibility()==View.VISIBLE){
+                    fab3.setVisibility(View.GONE);
+                    fab2.setVisibility(View.VISIBLE);
+                }
+                break;
+
+        }
+    }
+
+    public void animateFAB(){
+
+        if(isFabOpen){
+            fabright.startAnimation(rotate_backward);
+            fab0.startAnimation(fab_close);
+            fab1.startAnimation(fab_close);
+            fab2.startAnimation(fab_close);
+            fab3.startAnimation(fab_close);
+
+            fab0.setClickable(false);
+            fab1.setClickable(false);
+            fab2.setClickable(false);
+            fab3.setClickable(false);
+
+            isFabOpen = false;
+            Log.d("Rekha", "close");
+
+        } else {
+
+            fabright.startAnimation(rotate_forward);
+            fab0.setVisibility(View.VISIBLE);
+            fab1.setVisibility(View.VISIBLE);
+            fab2.setVisibility(View.VISIBLE);
+            fab3.setVisibility(View.VISIBLE);
+
+
+            fab0.startAnimation(fab_open);
+            fab1.startAnimation(fab_open);
+            fab2.startAnimation(fab_open);
+            fab3.startAnimation(fab_open);
+
+
+            fab0.setClickable(true);
+            fab1.setClickable(true);
+            fab2.setClickable(true);
+            fab3.setClickable(true);
+
+            isFabOpen = true;
+            Log.d("Rekha","open");
+
+        }
+    }
+
 }

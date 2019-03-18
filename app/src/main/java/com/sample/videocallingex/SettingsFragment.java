@@ -37,7 +37,7 @@ import android.widget.RadioGroup;
 public class SettingsFragment extends Fragment implements RadioGroup.OnCheckedChangeListener {
     boolean cameraFront = true, resolutionVGA = true;
     private RadioGroup cameraRG, resolutionRG;
-    private EditText roomIdEditText;
+    private EditText roomIdEditText,serverEditText;
 
     public SettingsFragment() {
     }
@@ -58,10 +58,14 @@ public class SettingsFragment extends Fragment implements RadioGroup.OnCheckedCh
 
         roomIdEditText = mView.findViewById(R.id.room_id);
         roomIdEditText.setText("5c10a7a3d7a49659e1ac470b");
+        serverEditText = mView.findViewById(R.id.server_url);
+        serverEditText.setText("https://metavoxx-vc.net:3004");
 
         return mView;
     }
-
+    String getServerUrl() {
+        return serverEditText.getText().toString();
+    }
     String getRoomId() {
         return roomIdEditText.getText().toString();
     }
