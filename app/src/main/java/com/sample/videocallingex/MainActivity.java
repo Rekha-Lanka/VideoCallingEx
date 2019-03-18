@@ -789,14 +789,14 @@ public class MainActivity extends AppCompatActivity
 
                 break;
             case R.id.fab0:
-                Toast.makeText(this, "fab0", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(this, "fab0", Toast.LENGTH_SHORT).show();
                if(fab0.getVisibility()==View.VISIBLE){
                    fab0.setVisibility(View.GONE);
                    fab1.setVisibility(View.VISIBLE);
                }
                 break;
             case R.id.fab1:
-                Toast.makeText(this, "fab1", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(this, "fab1", Toast.LENGTH_SHORT).show();
                 if(fab1.getVisibility()==View.VISIBLE){
                     fab1.setVisibility(View.GONE);
                     fab0.setVisibility(View.VISIBLE);
@@ -804,14 +804,14 @@ public class MainActivity extends AppCompatActivity
                 }
                 break;
             case R.id.fab2:
-                Toast.makeText(this, "fab2", Toast.LENGTH_SHORT).show();
+               // Toast.makeText(this, "fab2", Toast.LENGTH_SHORT).show();
                 if(fab2.getVisibility()==View.VISIBLE){
                     fab2.setVisibility(View.GONE);
                     fab3.setVisibility(View.VISIBLE);
                 }
                 break;
             case R.id.fab3:
-                Toast.makeText(this, "fab3", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "fab3", Toast.LENGTH_SHORT).show();
                 if(fab3.getVisibility()==View.VISIBLE){
                     fab3.setVisibility(View.GONE);
                     fab2.setVisibility(View.VISIBLE);
