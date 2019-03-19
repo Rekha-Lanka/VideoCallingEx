@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity
     private Publication screenPublication;
     private SurfaceViewRenderer localRenderer, remoteRenderer;
     private boolean isChecked = true;
-
+    AudioManager audioManager;
 
 
     ActionBar actionBar;
@@ -373,7 +373,7 @@ public class MainActivity extends AppCompatActivity
 //            actionBar.setDisplayHomeAsUpEnabled(true);
 //        }
 
-        AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
 
 
@@ -793,6 +793,7 @@ public class MainActivity extends AppCompatActivity
                if(fab0.getVisibility()==View.VISIBLE){
                    fab0.setVisibility(View.GONE);
                    fab1.setVisibility(View.VISIBLE);
+                   audioManager.setMode(AudioManager.ADJUST_MUTE);
                }
                 break;
             case R.id.fab1:
